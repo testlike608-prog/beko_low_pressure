@@ -1,0 +1,17 @@
+# The whole project runs on these two. Everything else is optional and is
+# imported only by the driver that needs it, so a missing one is a clear
+# sentence rather than an ImportError at startup.
+numpy
+opencv-python
+
+# The RealSense driver          CAMERA = {"kind": "realsense"}
+pyrealsense2
+
+# The trained model             VISION  = {"kind": "yolo"}
+# ultralytics
+
+# The tests
+# pytest
+
+# The Fairino SDK is NOT on pypi. Copy the `fairino` folder from the old
+# cobot-cell project and put it beside this one, next to main.py.

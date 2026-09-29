@@ -1,0 +1,9 @@
+# Pixels, for VISION = {"kind": "file", "path": "points.csv"}
+# u, v, label, depth_m      (label and depth_m are optional)
+#
+# Use this to replay the exact points from a run that went wrong: copy the
+# uv values out of a results.jsonl record and put them here.
+640, 360, weld1
+740, 380, weld2
+540, 380, weld3
+640, 460, port1
