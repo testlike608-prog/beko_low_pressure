@@ -120,8 +120,9 @@ class Fairino(Robot):
             from fairino import Robot as FR
         except ImportError as e:
             raise CellError(
-                "the fairino SDK is not importable. Put the 'fairino' folder "
-                "beside app.py (copy it from the old cobot-cell folder)."
+                "the fairino SDK is not importable. The project needs the "
+                "'fairino' folder (with Robot.py) beside app.py -- run from "
+                f"that folder, or check it was copied. ({e})"
             ) from e
         try:
             self.rpc = FR.RPC(self.ip)

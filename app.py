@@ -1,8 +1,9 @@
 import telegram_ask as tel
 import db
 import client as cl
-from cobot_kit import CellError, cycle
+from cobot_kit import CellError, cycle, robot
 import time
+from cobot_kit import _fairino, _robot_base
 
 #db.auto_connect_db()
 #db.get_product_number(dummy_number=test)
@@ -10,9 +11,12 @@ import time
 
 
 class App():
-    def __init__(self, scanner_ip):
+    def __init__(self, scanner_ip, scanner_port):
         self.scannr_ip= scanner_ip
+        self.scanner_port= scanner_port
         self.robot_is_connected = False
+        #self.robot = robot
+
         self.OUTPUT_NO   = 0       # الـ DO اللي بيطلع لما الروبوت يوصل النقطة
         self.INPUT_NO    = 0       # الـ DI اللي بنستناه قبل ما نروح للنقطة اللي بعدها
         self.WAIT_S      = 30.0    # أقصى وقت نستنى فيه الـ input (None = للأبد)
@@ -25,6 +29,12 @@ class App():
         pass
 
 
+
+    def _set_all_settings(self):
+        pass
+
+
+    
     def _start(self):
         #connect to camera
         #connect to db
@@ -51,24 +61,25 @@ class App():
 
     
     def _start_sequance(self):
+        #get sku from dummy scanned
+        #get csv to get number of points
         #move the robot to cap positions 
         #trig the camera to cap images and save it in capture folder
         #send the cap image to the ai model and give me x,y pixel fro image 
         #send the selected welding points from ai to camera to detect the x,y,z for the copot
         #start the cycle function 
         pass
-
+   
 
 
     def _robot_cycle(self,points_array):
         
-        #start the loop for each point
+        # start the loop for each point
         # لكل نقطة: approach -> النقطة -> يطلّع output -> يستنى input -> يرجع ورا
         
         
 
-
-        robot = self.robot
+        #robot = self.robot
         orientation = robot.pose().rpy     # الـ tool يفضل بنفس الاتجاه اللي هو عليه دلوقتي
         results = []
 

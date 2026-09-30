@@ -1,0 +1,48 @@
+جهزت المشروع للينكس: كملت الـ requirements، وصلّحت حاجتين كانوا هيوقفوا البرنامج، وضفت دليل تسطيب وسكريبت بيفحص الجهاز. جربت الـ imports على لينكس (Python 3.10) واشتغلت. على جهاز اللينكس الحقيقي والروبوت والكاميرا والـ SQL Server لسه متجربتش.
+
+الحاجات اللي كانت هتوقف البرنامج (على ويندوز ولينكس):
+
+logstore.py مكانش موجود: client.py و async_tcp_client.py بيستوردوه، فـ import client كان بيقع. عملته، وبيكتب لوج لكل client في فولدر logs/ جنب app.py، وعمره ما بيوقف البرنامج لو الكتابة فشلت.
+telegram_ask.py: من غير ملف .env كان import telegram_ask بيقع على طول، والملف ده مش موجود في الفولدر. خليت الغلطة تظهر بس لما حد ينده ask().
+
+requirments.txt: كان فيه حاجتين بس. دلوقتي فيه كل اللي المشروع بيستخدمه، وضفت منهم pyodbc و numpy و opencv-python و pyrealsense2 و ultralytics و httpx. سيبت اسم الملف زي ما هو، مع إن الاسم المعتاد requirements.txt.
+
+اللي بيختلف على لينكس:
+
+الـ SQL Server: الـ ODBC driver بيتسطب من apt مش من msiexec، فعدلت db.py يقول الخطوات بدل ما يحاول يشغل msiexec.
+Windows Authentication: مش هتشتغل على لينكس من غير Kerberos، فلو ملفات إعدادات الـ DB فيها Windows Authentication لازم تتحول لـ user و password.
+ملفات إعدادات الـ DB: db.py كان بيدور على last_db1_settings.txt و last_db2_settings.txt في الفولدر اللي البرنامج اتشغل منه، فخليته يدور عليهم جنب db.py نفسه.
+الـ RealSense: محتاجة udev rules عشان تشتغل من غير sudo. (تصحيح: pyrealsense2 ليها نسخة جاهزة بـ pip للجيتسون كمان، مش محتاجة build.)
+الـ Fairino SDK: (تصحيح) مفيش حاجة تتعمل. fairino/Robot.py اللي في المشروع Python عادي وبيشتغل على لينكس والجيتسون. ملفات .pyd و .so اللي في fairino/build/ بواقي build ومحدش بيستخدمها.
+أسماء الملفات: لينكس بيفرق بين الحروف الكبيرة والصغيرة، فـ Weld.pt مش هو weld.pt.
+الشبكة: جهاز اللينكس محتاج IP ثابت على 192.168.57.x عشان يوصل للروبوت.
+الكاميرا العادية: الكيت كان بيفتحها بطريقة ويندوز، خليته يستخدم الطريقة بتاعة لينكس.
+الشاشة: ClickPicker و cv2.imshow محتاجين شاشة. لو الـ AI هو اللي بيختار النقط مش هتحتاجهم.
+Python: لازم 3.10 أو أحدث. لو الجهاز Jetson عليه JetPack 5، الـ Python فيه 3.8 ومش هينفع.
+
+خطوات التسطيب كلها بالأوامر في LINUX_SETUP.md. وبعد ما تخلصها شغّل python3 check_linux.py، وهيقولك إيه الجاهز وإيه اللي فاضل.
+
+غلطة في app.py هتوقف _robot_cycle: إنت كاتب from cobot_kit import robot، وده بيجيب الملف robot.py نفسه مش روبوت شغال. فـ robot.pose() هتقع بـ AttributeError. متلمستش app.py عشان إنت شغال فيه، والتصليح كده:
+
+python
+from cobot_kit import CellError, cycle, Robot     # بدل: robot
+# وشيل:  from cobot_kit import _fairino, _robot_base   (مش محتاجهم)
+
+# في __init__:
+self.robot = Robot()
+
+# في _start:
+self.robot.start()
+
+# في _robot_cycle: رجّع السطر ده بدل ما هو comment
+robot = self.robot
+
+ولو كنت ناوي _set_all_settings تقرا settings.json، الملف ده فاضي دلوقتي و json.load هيقع عليه.
+
+عندي سؤال واحد: جهاز اللينكس PC عادي ولا Jetson؟ خطوات الـ RealSense والـ torch مختلفة خالص بينهم.
+
+Sources:
+
+Microsoft — Install the ODBC driver for SQL Server (Linux)
+
+https://learn.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server?view=sql-server-ver17&tabs=alpine18-install%2Calpine17-install%2Cdebian8-install%2Credhat7-13-install%2Crhel7-offline

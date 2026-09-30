@@ -216,7 +216,8 @@ FixedPoints([(640, 360), (740, 380)])
 pip install numpy opencv-python pyrealsense2 ultralytics
 ```
 
-والـ Fairino SDK **مش على pypi** — انسخ فولدر `fairino` وحطه جنب `app.py`.
+والـ Fairino SDK **مش على pypi** — هو فولدر `fairino/` اللي جنب `app.py` (موجود في
+المشروع). `fairino/Robot.py` Python عادي وبيشتغل على ويندوز ولينكس والجيتسون.
 
 ---
 

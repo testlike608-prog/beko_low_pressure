@@ -265,8 +265,10 @@ class _OpenCV(CameraHub):
     def _capture_loop(self, camera_index: int):
         import cv2
 
-        # DSHOW أسرع على Windows، وإلا auto-detect
-        cap = cv2.VideoCapture(camera_index, cv2.CAP_DSHOW)
+        # DSHOW أسرع على Windows، V4L2 على لينكس، وإلا auto-detect
+        import sys
+        api = cv2.CAP_DSHOW if sys.platform.startswith("win") else cv2.CAP_V4L2
+        cap = cv2.VideoCapture(camera_index, api)
         if not cap.isOpened():
             cap = cv2.VideoCapture(camera_index)
         if not cap.isOpened():
@@ -435,7 +437,7 @@ class _UseePlus(CameraHub):
         if not devices:
             log.error(
                 f"{self._log_name}: ❌ الكاميرا مش موجودة "
-                "— تأكد USB متوصل + Zadig مثبّت"
+                "— تأكد USB متوصل + Zadig مثبّت (ويندوز) / udev rule (لينكس)"
             )
             return
 

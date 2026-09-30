@@ -25,7 +25,9 @@ from dotenv import load_dotenv
 
 reply = None
 load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
-BOT_TOKEN = os.environ["BOT_TOKEN"]
+# .get بدل [] : من غير .env كان `import telegram_ask` في app.py بيرمي KeyError
+# والبرنامج كله مش بيقوم. دلوقتي الغلطة بتظهر بس لما حد ينده ask().
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
 GROUP_CHAT_ID = int(os.environ.get("GROUP_CHAT_ID", "-5387683024"))
 
 API = f"https://api.telegram.org/bot{BOT_TOKEN}"
@@ -49,6 +51,9 @@ def ask(question: str, options: list[str] | None = None,
     Prints the answer and returns it. Returns None if `timeout` seconds pass
     with no answer.
     """
+    if not BOT_TOKEN:
+        raise RuntimeError("BOT_TOKEN is not set -- put BOT_TOKEN=... in a .env "
+                           "file beside telegram_ask.py")
     deadline = time.time() + timeout if timeout else None
 
     with httpx.Client() as client:

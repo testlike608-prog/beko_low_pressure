@@ -1,4 +1,5 @@
 import os
+import sys
 import threading
 import subprocess
 from typing import Protocol
@@ -13,6 +14,12 @@ class _SupportsLogAdd(Protocol):
 # مهلة الاتصال (ثواني). كانت 15 لكل قاعدة، يعني 30 ثانية انتظار لو
 # السيرفرات مش موصولة. على شبكة محلية 5 ثواني أكتر من كفاية.
 CONNECT_TIMEOUT = 5
+
+# ملفات الإعدادات (last_db1_settings.txt ...) بتتقري من جنب db.py مش من الـ
+# working directory -- على لينكس البرنامج ممكن يتشغل من systemd أو من فولدر
+# تاني، وساعتها "No saved DB settings" رغم إن الملف موجود.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+IS_WINDOWS = sys.platform.startswith("win")
 
 conn_str_db1_global = ""
 conn_str_db2_global = ""
@@ -76,6 +83,11 @@ def build_conn_str(serveraddr, database_name, auth, user_name, password, driver=
     ]
 
     if auth == "Windows Authentication":
+        if not IS_WINDOWS:
+            # على لينكس Windows Authentication محتاجة Kerberos متظبط على
+            # الجهاز -- من غيرها الاتصال بيفشل برسالة مش واضحة.
+            print("  !! Windows Authentication on Linux needs Kerberos (kinit) -- "
+                  "use SQL Server Authentication (user/password) instead")
         parts.append("Trusted_Connection=yes;")
     else:
         parts.append(f"UID={user_name};PWD={password};")
@@ -95,7 +107,19 @@ def check_driver():
     )
 
 
+LINUX_DRIVER_HELP = (
+    "ODBC Driver 18 for SQL Server is not installed. On Ubuntu/Debian:\n"
+    "  sudo apt install unixodbc unixodbc-dev\n"
+    "  then add Microsoft's apt repo and: sudo ACCEPT_EULA=Y apt install msodbcsql18\n"
+    "  (full steps in LINUX_SETUP.md)"
+)
+
+
 def install_driver():
+    if not IS_WINDOWS:
+        # msiexec موجود على ويندوز بس -- على لينكس التسطيب بيبقى من apt
+        print(LINUX_DRIVER_HELP)
+        return False
     msi_path = os.path.join(os.path.dirname(__file__), "msodbcsql.msi")
     if not os.path.exists(msi_path):
         print(f"ODBC installer not found at {msi_path}")
@@ -131,9 +155,11 @@ def auto_connect_db():
     global conn_str_db1_global, conn_str_db2_global, connected1, connected2
 
     def connect_from_file(filename, index):
+        filename = os.path.join(BASE_DIR, filename)
         if not os.path.exists(filename):
             return None, f"No saved DB{index} settings"
-        with open(filename, "r") as f:
+        # utf-8-sig: الملف لو اتحفظ على ويندوز ممكن يبقى فيه BOM في أوله
+        with open(filename, "r", encoding="utf-8-sig") as f:
             data = f.read().strip().split("|")
             if len(data) != 5:
                 return None, f"Invalid DB{index} format"

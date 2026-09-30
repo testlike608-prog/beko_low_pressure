@@ -1,2 +1,36 @@
+# beko_low_pressure -- Python 3.10 or newer (telegram_ask / async_tcp_client need it)
+#
+#   pip install -r requirments.txt
+#
+# Target: Jetson, JetPack 6.2 (Ubuntu 22.04, Python 3.10, CUDA 12.6).
+# ORDER MATTERS on the Jetson -- see LINUX_SETUP.md:
+#   1. apt packages   2. NVIDIA torch + torchvision   3. this file
+# If torch is not installed first, ultralytics pulls a CPU-only torch from pypi.
+
+# ---- telegram_ask.py
 python-telegram-bot[job-queue]>=21.0
 python-dotenv>=1.0
+httpx>=0.25                     # used directly by telegram_ask.py
+
+# ---- db.py  (also needs unixODBC + msodbcsql18 from apt, see LINUX_SETUP.md)
+pyodbc>=5.0
+
+# ---- cobot_kit
+numpy>=1.24,<2; platform_machine == "aarch64"   # NVIDIA's Jetson torch is built on numpy 1.x
+numpy>=1.24; platform_machine != "aarch64"
+# opencv-python 4.12+ requires numpy 2, which breaks NVIDIA's Jetson torch -> cap it there.
+# (opencv-python-headless instead ONLY if there is no screen: no ClickPicker / imshow then)
+opencv-python>=4.8,<4.12; platform_machine == "aarch64"
+opencv-python>=4.8; platform_machine != "aarch64"
+
+# RealSense: pypi now has linux aarch64 wheels for Python 3.10 too.
+# Still needs the udev rules from LINUX_SETUP.md.
+pyrealsense2>=2.55
+
+# The AI model. On the Jetson, torch/torchvision come from NVIDIA's index
+# (LINUX_SETUP.md step 3), NOT from here.
+ultralytics>=8.1
+
+# Only for the UseePlus endoscope backend in camera_hub.py
+# pyusb>=1.2
+# libusb-package>=1.0
