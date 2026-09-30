@@ -144,6 +144,22 @@ class Robot:
                 print(f"  !! could not disconnect: {e}")
             print(f"  {arm.name} stopped\n")
 
+    def set_manual(self) -> None:
+        """
+        Hand the arm to the operator (MANUAL) and STAY connected -- for a manual
+        calibration. set_automatic() takes it back. Unlike stop(), no homing
+        and no disconnect.
+        """
+        arm = self._need()
+        print(f"  {arm.name}: -> MANUAL")
+        arm.release()
+
+    def set_automatic(self) -> None:
+        """Back from set_manual(): clear faults, AUTOMATIC, servos on."""
+        arm = self._need()
+        print(f"  {arm.name}: -> AUTOMATIC")
+        arm.prepare()
+
     def halt(self) -> None:
         """Stop the move in progress, stay connected. Safe from another thread."""
         if not self._connected:

@@ -1,0 +1,7 @@
+# recipe template -- copy to <SKU>.csv (the SKU exactly as the DB returns it)
+# key, values...        lines starting with # are comments
+welding_points, 6
+# capture positions, one line each, in order. joints (degrees) are safer than poses.
+# no capture line -> CAPTURE_POSITIONS from cobot_kit/settings.py
+capture_joints, 0, -20, -90, -70, 90, 0
+# capture_pose, 734, -426, -100, 180, 0, 175
