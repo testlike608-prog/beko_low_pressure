@@ -5,20 +5,6 @@ import queue
 import logstore
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # General Class
 class  TCPClient():
     def __init__(self, ip, port, timeout=None, buffer_size=4096):
